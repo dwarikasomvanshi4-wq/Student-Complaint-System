@@ -3,13 +3,14 @@ import axios from 'axios';
 /**
  * Configured Axios instance for client-side API calls.
  *
- * - Sends cookies automatically via `withCredentials: true`
- * - Intercepts 401 responses and redirects to /login (client-side only)
+ * Uses relative URLs (no baseURL) so it works on any domain —
+ * localhost in dev, Vercel in production — without needing NEXT_PUBLIC_APP_URL.
  *
  * Requirements: 2.4, 3.7
  */
 const axiosClient = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
+  // No baseURL — all paths like '/api/auth/login' are relative to the current origin.
+  // This works correctly on both localhost and any deployed domain.
   withCredentials: true,
 });
 
@@ -22,7 +23,6 @@ axiosClient.interceptors.response.use(
     ) {
       const publicPaths = ['/login', '/register', '/', '/about', '/contact'];
       const isPublic = publicPaths.some((p) => window.location.pathname === p);
-      // Only redirect if we're on a protected page, not already on a public/auth page
       if (!isPublic) {
         window.location.href = '/login';
       }
